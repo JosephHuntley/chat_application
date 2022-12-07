@@ -3,6 +3,8 @@ import Cookies from 'universal-cookie';
 import axios from 'axios';
 import signinImage from '../assets/signup.jpg';
 
+const cookies = new Cookies();
+
 const initialState = {
 	fullname: '',
 	username: '',
@@ -19,9 +21,36 @@ const Auth = () => {
 	const handleChange = (e) => {
 		setForm({ ...form, [e.target.name]: e.target.value });
 	};
-	const handleSubmit = (e) => {
+	const handleSubmit = async (e) => {
 		e.preventDefault();
-		console.log(form);
+
+		const { fullName, username, password, phoneNumber, avatarURL } = form;
+
+		const url = 'http://localhost:5000/auth';
+
+		const {
+			data: { token, userId, hashedPassword },
+		} = await axios.post(`${url}/${isSignup ? 'signup' : 'login'}`, {
+			username,
+			password,
+			fullName,
+			phoneNumber,
+			avatarURL,
+		});
+		console.log('test');
+
+		cookies.set('token', token);
+		cookies.set('username', username);
+		cookies.set('fullName', fullName);
+		cookies.set('userId', userId);
+
+		if (isSignup) {
+			cookies.set('phoneNumber', phoneNumber);
+			cookies.set('avatarURL', avatarURL);
+			cookies.set('hashedPassword', hashedPassword);
+		}
+
+		window.location.reload();
 	};
 
 	const switchMode = () => setIsSignup((prevIsSignup) => !prevIsSignup);
@@ -87,19 +116,19 @@ const Auth = () => {
 								onChange={handleChange}
 								required
 							/>
-							{isSignup && (
-								<div className='auth__form-container_fields-content_input'>
-									<label htmlFor='confirmPassword'>Confrim Password</label>
-									<input
-										type='password'
-										name='confirmPassword'
-										placeholder='Confirm Password'
-										onChange={handleChange}
-										required
-									/>
-								</div>
-							)}
 						</div>
+						{isSignup && (
+							<div className='auth__form-container_fields-content_input'>
+								<label htmlFor='confirmPassword'>Confrim Password</label>
+								<input
+									type='password'
+									name='confirmPassword'
+									placeholder='Confirm Password'
+									onChange={handleChange}
+									required
+								/>
+							</div>
+						)}
 						<div className='auth__form-container_fields-content_button'>
 							<button>{isSignup ? 'Sign Up' : 'Sign In'}</button>
 						</div>
