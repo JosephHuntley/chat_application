@@ -12,6 +12,7 @@ const app_id = process.env.STREAM_APP_ID;
 const signup = async (req, res) => {
 	try {
 		const { fullName, username, password, phoneNumber } = req.body;
+		console.log(fullName);
 
 		const userId = crypto.randomBytes(16).toString('hex');
 
@@ -19,11 +20,11 @@ const signup = async (req, res) => {
 
 		const hashedPassword = await bcrypt.hash(password, 10);
 
-		const token = serverClient.creatUserToken(userId);
+		const token = serverClient.createUserToken(userId);
 
 		res
 			.status(200)
-			.json({ token, fullname, username, userId, hashedPassword, phoneNumber });
+			.json({ token, fullName, username, userId, hashedPassword, phoneNumber });
 	} catch (error) {
 		console.log(error);
 
@@ -31,7 +32,7 @@ const signup = async (req, res) => {
 	}
 };
 
-const login = async (res, req) => {
+const login = async (req, res) => {
 	try {
 		const { username, password } = req.body;
 
@@ -46,17 +47,17 @@ const login = async (res, req) => {
 
 		const success = await bcrypt.compare(password, users[0].hashedPassword);
 
-		const token = serverClient.creatUserToken(users[0].id);
+		const token = serverClient.createUserToken(users[0].id);
 
 		if (success) {
 			return res.status(200).json({
 				token,
 				fullName: users[0].fullName,
-				userId: users[0].userId,
-				username: users[0].username,
+				username,
+				userId: users[0].id,
 			});
 		} else {
-			return res.status(400).json({ message: 'Incorect password' });
+			return res.status(400).json({ message: 'Incorrect password' });
 		}
 	} catch (error) {
 		console.log(error);
